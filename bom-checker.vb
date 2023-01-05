@@ -8,7 +8,6 @@ Dim oFileDlg As Inventor.FileDialog = Nothing
             oFileDlg.InitialDirectory = "C:\MCAD\Workspace\" 'OLC\"
             oFileDlg.Filter = "CSV Files (*.csv)|*.csv"
             oFileDlg.DialogTitle = "Select a BOM Sheet"
-            'oFileDlg.InitialDirectory = ThisDoc.Path
             oFileDlg.CancelError = True
             'On Error Resume Next
             oFileDlg.ShowOpen()
@@ -17,37 +16,11 @@ Dim oFileDlg As Inventor.FileDialog = Nothing
                 Return
             ElseIf oFileDlg.FileName <> "" Then
                 Dim myCSV As String = oFileDlg.FileName
-				'Dim filepath As String = Cstr(myCSV)
-'                'define Excel Application object
-'                excelApp = CreateObject("Excel.Application")
-'                'workbook exists, open it
-'                excelWorkbook = excelApp.Workbooks.Open(myXLS)
-'                oSheetCount = excelWorkbook.Sheets.Count
-'                mySheet = "BOM"
-
-'                Dim oSheetName As String = "BOM"
-'                Dim oExcelApp As New Microsoft.Office.Interop.Excel.ApplicationClass
-'                oExcelApp.DisplayAlerts = False
-'                Dim oWB As Workbook = oExcelApp.Workbooks.Open(myXLS)
-'                Dim oWS As Worksheet = oWB.Sheets.Item(oSheetName)
-'                Dim oLastRowUsed As Integer = oWS.UsedRange.Rows.Count
-'                'MsgBox("Last row being used is Row#:  " & oLastRowUsed)
-'                Dim oCells As Range = oWS.Cells
-				'MsgBox(myCSV)
+				
                 Dim oData As New Dictionary(Of String, String)
                 Dim oDataM As New Dictionary(Of Integer, Integer)
                 Dim oRow As Integer
-                'First number is Row index, second number is Column Index
-'                For oRow = 2 To oLastRowUsed
-'                    Dim x As Integer = GoExcel.CellValue(myXLS, "BOM", "A" & oRow)
-'                    Dim y As Integer = CInt(GoExcel.CellValue(myXLS, "BOM", "B" & oRow))
-'                    oData.Add(x, y)
-
-'                Next
-				
-				' Open the CSV file
-				'Dim reader As StreamReader = myCSV
-				'reader(myCSV)
+               
 				Using reader As New StreamReader(myCSV)
 				    ' Read the header line and discard it
 				    reader.ReadLine()
@@ -65,31 +38,16 @@ Dim oFileDlg As Inventor.FileDialog = Nothing
 				    End While
 				End Using
 
-                'For Each kvp As KeyValuePair(Of String, Integer) In oData
-                '  MsgBox(kvp.Key & " -- " & kvp.Value)
-                'Next
-				
-				
-
-                Dim oAsm As AssemblyDocument = ThisApplication.ActiveDocument
-                Dim oAsmCompDef As AssemblyComponentDefinition = oAsm.ComponentDefinition
-                Dim comps As New List(Of ComponentOccurrence)
-
-
                 ' Get the active assembly.
                 Dim oAsmDoc As AssemblyDocument
                 oAsmDoc = ThisApplication.ActiveDocument
 
-                ' Get the definition of the assembly.
-                Dim oAsmDef As AssemblyComponentDefinition
-                oAsmDef = oAsmDoc.ComponentDefinition
 
                 Dim nrOfOccs As Integer = 0
 
 
                 ' Get the occurrences that represent this document.
                 Dim oOccs As ComponentOccurrencesEnumerator
-                'oOccs = oAsmDef.Occurrences.AllReferencedOccurrences(oDoc)
 
                 ' Print the occurrences to the Immediate window.
                 Dim oOcc As ComponentOccurrence
@@ -101,13 +59,6 @@ Dim oFileDlg As Inventor.FileDialog = Nothing
                         Try
                             If oDocCheck.PropertySets.Item("Design Tracking Properties").Item("Stock Number").Value = kvp.Key Then
                                 nrOfOccs = oAsmDoc.ComponentDefinition.Occurrences.AllReferencedOccurrences(oDocCheck).Count
-
-                                For Each comp As ComponentOccurrence In oAsm.ComponentDefinition.Occurrences
-                                    oFileName5 = comp.Definition.Document.displayname
-                                    If InStr(oFileName5, kvp.Key) <> 0 Then
-                                        comps.Add(comp)
-                                    End If
-                                Next
                             End If
                         Catch
                         End Try
@@ -115,13 +66,8 @@ Dim oFileDlg As Inventor.FileDialog = Nothing
                     Dim x2 As Integer = kvp.Key
                     Dim y2 As Integer = nrOfOccs
                     oDataM.Add(x2, y2)
-                    'MsgBox("Number of occurrences of: " & kvp.Key & " = " & nrOfOccs)
-                Next
 
-                'For Each kvp As KeyValuePair(Of Integer, Integer) In oDataM
-                'MsgBox(kvp.Key & " -- " & kvp.Value)
-                'Next	
-                'MsgBox(comps.Count)
+                Next
 
 
                 Dim assemblyDef As AssemblyComponentDefinition = ThisDoc.Document.ComponentDefinition
@@ -129,32 +75,20 @@ Dim oFileDlg As Inventor.FileDialog = Nothing
                 Try
 
 
-                    'Activate a writeable View Rep (master view rep is not writeable)
+                    ' Activate a writeable View Rep (master view rep is not writeable)
 
                     assemblyDef.RepresentationsManager.DesignViewRepresentations.Item("BOM Check").Activate()
 
                 Catch
 
-                    'Assume error means this View Rep does not exist, so create it
+                    ' Assume error means this View Rep does not exist, so create it
 
                     oViewRep = assemblyDef.RepresentationsManager.DesignViewRepresentations.Add("BOM Check")
                     oViewRep.Activate
 
                 End Try
-
-
-'                If (oData.ContainsKey(30525649) And oDataM.ContainsKey(30525649)) And (oData(30525649) = oDataM(30525649)) Then
-'                    MsgBox(oData(30525649) & " VS " & oDataM(30525649))
-'                Else
-'                    MsgBox(oData(30525649) & " <> " & oDataM(30525649))
-'                End If
-
-'                If (oData.ContainsKey(30444523) And oDataM.ContainsKey(30444523)) And (oData(30444523) = oDataM(30444523)) Then
-'                    MsgBox(oData(30444523) & " VS " & oDataM(30444523))
-'                Else
-'                    MsgBox(oData(30444523) & " <> " & oDataM(30444523))
-'                End If
-
+                
+                ' turn off work features in the model
                 For Each oDocCheck As Document In oAsmDoc.AllReferencedDocuments
                     For Each oworkplane In assemblyDef.WorkPlanes
                         oworkplane.Visible = False
@@ -167,8 +101,7 @@ Dim oFileDlg As Inventor.FileDialog = Nothing
                     Next
                 Next
 
-                Dim occ As Inventor.ComponentOccurrence
-
+                ' turn off visibility if quantities in dictionaries are equal (part level)
                 For Each occ In assemblyDef.Occurrences.AllLeafOccurrences
                     Dim refDoc As PartDocument = occ.Definition.Document
 
@@ -178,12 +111,8 @@ Dim oFileDlg As Inventor.FileDialog = Nothing
 
                     SAPVal = SAPProp.Value
 
-                    '		If SAPVal.ToString.Contains("30571635") Then
-                    '			MsgBox("Exists")
-                    '		End If
-
                     If SAPVal <> Nothing And IsNumeric(SAPVal) Then
-                        'MsgBox(SAPVal)
+
                         If (oData.ContainsKey(SAPVal) And oDataM.ContainsKey(SAPVal)) Then
                             If (oData(SAPVal) = oDataM(SAPVal)) Then
                                 occ.Visible = False
@@ -199,7 +128,7 @@ Dim oFileDlg As Inventor.FileDialog = Nothing
 
 
                 Next
-
+                ' turn off visibility if quantities in dictionaries are equal (assembly level)
                 For Each occ In assemblyDef.Occurrences
                     Dim oANAME As String = occ.Name
                     iPropSAP = iProperties.Value(oANAME, "Project", "Stock Number")
@@ -217,12 +146,6 @@ Dim oFileDlg As Inventor.FileDialog = Nothing
 
                 Next
 
-                'MsgBox(oData.Item(30571635) & "--" & oDataM.Item(30571635))
-				
-				'AsmComment = oAsmDoc.PropertySets.Item("Inventor Summary Information").Item("Comments").Value.ToString
-				'AsmComment.Equals(""), case for all other assemblies minus legacy
-				'AsmComment.Contains("GC Series"), case for GC Series
-				'AsmComment.Contains("Legacy"), case for legacy systems (s80,s90, s200, etc.)
 				
 				Try
 	                If oAsmDoc.PropertySets.Item("Inventor Summary Information").Item("Comments").Value.ToString.Contains("GC Series") Then
@@ -236,8 +159,10 @@ Dim oFileDlg As Inventor.FileDialog = Nothing
 				
 			End If
 			
+            ' create list of results, remove duplicates
 			Dim result As List(Of String) = estr.Distinct().ToList
 			
+            ' concatenate results to variable for msgbox display
 			For i As Integer = 0 To result.Count - 1
 				If i = 0 Then
 					oText = result(i)
@@ -246,24 +171,20 @@ Dim oFileDlg As Inventor.FileDialog = Nothing
 				End If
 			Next
 			
-			'MsgBox(oText)
-			'Create and write to a text file
+			' Create and write to a text file
 			oWrite = System.IO.File.CreateText(ThisDoc.PathAndFileName(False) & ".txt")
 
-			'Write Array out to String
+			' Write list out to file
 			oWrite.WriteLine("SAP No: EBOM QTY <> BOM QTY:")
 			For Each Item As String In result
 				oWrite.WriteLine(Item)
 			Next
 
+            ' close the file
 			oWrite.Close()
-
-			'ThisDoc.Launch(ThisDoc.PathAndFileName(False) & ".txt")'open the file
 			
+            ' display data to user
 			MsgBox("The following Items have inconsistent quantities:" & vbCrLf & "SAP No: EBOM QTY <> BOM QTY:" & vbCrLf & oText, ,"BOM Check")
 
-                'close the workbook And the Excel Application
-'                excelWorkbook.Close
-'            excelApp.Quit
-			
-			ThisDoc.Launch(ThisDoc.PathAndFileName(False) & ".txt")'open the file
+			' open the file
+			ThisDoc.Launch(ThisDoc.PathAndFileName(False) & ".txt")
