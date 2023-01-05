@@ -17,9 +17,10 @@ Dim oFileDlg As Inventor.FileDialog = Nothing
             ElseIf oFileDlg.FileName <> "" Then
                 Dim myCSV As String = oFileDlg.FileName
 				
+                ' initialize dictionary for ebom (oData) and dictionary for BOM (oDataM)
                 Dim oData As New Dictionary(Of String, String)
                 Dim oDataM As New Dictionary(Of Integer, Integer)
-                Dim oRow As Integer
+        
                
 				Using reader As New StreamReader(myCSV)
 				    ' Read the header line and discard it
