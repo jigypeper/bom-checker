@@ -1,6 +1,6 @@
-AddReference "Microsoft.Office.Interop.Excel.dll"
-Imports Microsoft.Office.Interop.Excel
 Imports System.IO
+
+' initialize empty list for data
 Dim estr As New List(Of String)
 
 Dim oFileDlg As Inventor.FileDialog = Nothing
@@ -146,7 +146,7 @@ Dim oFileDlg As Inventor.FileDialog = Nothing
 
                 Next
 
-				
+				' try to activate level of detail
 				Try
 	                If oAsmDoc.PropertySets.Item("Inventor Summary Information").Item("Comments").Value.ToString.Contains("GC Series") Then
 	                    assemblyDef.RepresentationsManager.LevelOfDetailRepresentations.Item("All Content Center Suppressed").Activate()
